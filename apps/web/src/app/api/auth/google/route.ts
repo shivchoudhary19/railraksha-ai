@@ -55,7 +55,7 @@ export async function POST(request:NextRequest){
       }catch{
         // Try verifying against Firebase Auth certs
         try{
-          const targetProject=body.projectId||process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+          const targetProject=body.projectId||process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID||'windy-ward-jk6n5';
           const {payload}=await jwtVerify(body.idToken,firebaseAuthKeys);
           if(payload.sub&&typeof payload.iss==='string'&&payload.iss.startsWith('https://securetoken.google.com/')){
             if(!targetProject||payload.aud===targetProject||payload.iss===`https://securetoken.google.com/${targetProject}`){
