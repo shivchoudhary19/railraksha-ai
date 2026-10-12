@@ -12,6 +12,7 @@ const firebaseAuthKeys=createRemoteJWKSet(new URL('https://www.googleapis.com/se
 interface GoogleAuthBody {
   idToken?: string;
   demoPersona?: 'citizen'|'verified_reporter'|'rpf_cyber'|'analyst';
+  persona?: 'citizen'|'verified_reporter'|'rpf_cyber'|'analyst';
   locale?: string;
   returnTo?: string;
 }
@@ -29,6 +30,7 @@ export async function POST(request:NextRequest){
 
     const body=(await request.json().catch(()=>({}))) as GoogleAuthBody;
     const locale=body.locale==='hi'?'hi':'en';
+    const activePersona=body.demoPersona||body.persona;
 
     let sub=`google_${randomSecret().slice(0,16)}`;
     let name='Rahul Sharma (Google Verified)';
@@ -67,14 +69,14 @@ export async function POST(request:NextRequest){
         }
       }
 
-      if(!verified&&!body.demoPersona){
+      if(!verified&&!activePersona){
         return NextResponse.json({error:'Invalid or expired Google credential'},{status:401});
       }
     }
 
     // 2. Persona selection (for Presentation & Testing)
-    if(body.demoPersona){
-      switch(body.demoPersona){
+    if(activePersona){
+      switch(activePersona){
         case 'rpf_cyber':
           sub=`google_rpf_${randomSecret().slice(0,10)}`;
           name='Inspector Vikram Singh (RPF Cyber Defense)';
