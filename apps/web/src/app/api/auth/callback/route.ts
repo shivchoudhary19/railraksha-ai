@@ -1,8 +1,9 @@
 import {NextRequest,NextResponse} from 'next/server';
-import {apiFetch,exchange,sessionCookie,transactionCookie,transactionSchema} from '@/lib/auth';
+import {apiFetch,exchange,sessionCookie,sessionFallbackCookie,signSessionToken,transactionCookie,transactionSchema} from '@/lib/auth';
 import {redis,rateLimit} from '@/lib/redis';
 import {appOrigin,csrfMatches,randomSecret,secureCookies} from '@/lib/security';
 import {errors} from 'jose';
+
 export async function GET(request:NextRequest){
   let locale='en';
   try{
@@ -15,13 +16,15 @@ export async function GET(request:NextRequest){
     if(!csrfMatches(transaction.state,request.nextUrl.searchParams.get('state')))throw new Error('Invalid state');
     const code=request.nextUrl.searchParams.get('code');if(!code)throw new Error('Authorization failed');
     const session=await exchange(code,transaction.verifier,transaction.nonce,`${appOrigin()}/api/auth/callback`);
-    const audit=await apiFetch('/v1/session-events',session,{method:'POST',body:JSON.stringify({action:'session.login'})});
-    if(!audit.ok)throw new Error('Audit unavailable');
+    const audit=await apiFetch('/v1/session-events',session,{method:'POST',body:JSON.stringify({action:'session.login'})}).catch(()=>null);
+    if(!audit?.ok)console.error(JSON.stringify({event:'audit_unavailable'}));
     const sid=randomSecret();const ttl=Math.floor((session.expiresAt-Date.now())/1000);
     if(ttl<1)throw new Error('Expired session');
-    await redis().set(`session:${sid}`,JSON.stringify(session),'EX',ttl);
+    await redis().set(`session:${sid}`,JSON.stringify(session),'EX',ttl).catch(()=>null);
+    const fallbackToken=await signSessionToken(session);
     const response=NextResponse.redirect(new URL(transaction.returnTo,appOrigin()));
     response.cookies.set(sessionCookie,sid,{httpOnly:true,secure:secureCookies(),sameSite:'lax',path:'/',maxAge:ttl});
+    response.cookies.set(sessionFallbackCookie,fallbackToken,{httpOnly:true,secure:secureCookies(),sameSite:'lax',path:'/',maxAge:ttl});
     response.cookies.delete(transactionCookie);response.headers.set('Cache-Control','no-store');return response;
   }catch(error){
     const known=['Token exchange failed','Unverified identity','Identity mismatch','Audit unavailable'];

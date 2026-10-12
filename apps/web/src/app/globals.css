@@ -42,5 +42,84 @@ textarea{font:inherit}textarea:focus-visible{outline:3px solid var(--focus);outl
 .mt-8{margin-top:2rem}
 .pow-card{margin-top:1.5rem;border:2px solid var(--amber)}
 
+/* =========================================================================
+   UI PRO MAX — WORLD-CLASS LOGIN & FIREBASE GOOGLE AUTH DESIGN SYSTEM
+   ========================================================================= */
+.login-page-pro{padding-block:40px 90px;min-height:80vh}
+.pro-back-link{font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:8px;color:var(--muted);transition:all .2s cubic-bezier(.16,1,.3,1);padding:6px 12px;border-radius:8px;background:var(--surface);border:1px solid transparent;margin-bottom:24px}
+.pro-back-link:hover{color:var(--green);border-color:var(--border);transform:translateX(-3px)}
 
+.login-grid-pro{display:grid;grid-template-columns:1.15fr 480px;gap:70px;align-items:start;padding-block:20px 40px}
 
+.login-story-pro{position:relative}
+.defense-status-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:var(--green-soft);color:var(--green);border:1px solid var(--border);border-radius:9999px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:20px}
+.defense-beacon{width:8px;height:8px;border-radius:50%;background:var(--green-bright);box-shadow:0 0 10px var(--green-bright);animation:pulse-beacon 2s cubic-bezier(.16,1,.3,1) infinite}
+@keyframes pulse-beacon{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(1.35)}}
+
+.pro-eyebrow{color:var(--green);font-size:11px;font-weight:800;letter-spacing:.14em;margin-bottom:8px}
+.pro-heading{font-size:clamp(38px,4.2vw,56px);line-height:1.12;letter-spacing:-.045em;color:var(--navy);margin-block:12px 18px}
+.pro-lead{color:var(--muted);font-size:16px;line-height:1.75;max-width:500px}
+
+.security-note-pro{display:flex;gap:16px;background:var(--green-soft);border:1px solid var(--border);border-radius:14px;padding:22px;margin-top:32px;color:var(--green);box-shadow:0 4px 20px rgba(21,115,61,.06)}
+.security-note-icon{flex-shrink:0;width:44px;height:44px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--green);box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.security-note-pro strong{display:block;font-size:14px;color:var(--navy);margin-bottom:4px}
+.security-note-pro p{font-size:13px;color:var(--muted);line-height:1.6}
+
+.defense-features-list{display:flex;flex-direction:column;gap:12px;margin-top:28px}
+.defense-feature-item{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--ink)}
+.defense-feature-item .feature-icon{color:var(--green);flex-shrink:0}
+
+/* Glassmorphic Login Card */
+.login-card-pro{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px;box-shadow:0 24px 50px rgba(11,31,58,.08);transition:box-shadow .3s ease;position:relative}
+.login-card-pro:hover{box-shadow:0 30px 60px rgba(11,31,58,.12)}
+
+.login-card-header{display:flex;align-items:center;gap:16px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.pro-card-icon{width:56px;height:56px;border-radius:16px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;margin-bottom:0;flex-shrink:0;box-shadow:0 4px 14px rgba(21,115,61,.12)}
+.login-card-header h2{font-size:24px;letter-spacing:-.03em;color:var(--navy);margin:0}
+.card-sublabel{font-size:12px;color:var(--muted);margin-top:3px}
+
+.pro-alert{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:20px}
+
+/* Google Sign-In Button */
+.auth-methods-group{display:flex;flex-direction:column;gap:10px}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:14px;width:100%;min-height:56px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg);color:var(--ink);font-weight:650;font-size:15px;padding:12px 20px;cursor:pointer;transition:all .2s cubic-bezier(.16,1,.3,1);box-shadow:0 2px 8px rgba(0,0,0,.04);text-align:left}
+.google-btn:hover:not(:disabled){transform:translateY(-2px);border-color:#4285f4;box-shadow:0 10px 28px rgba(66,133,244,.18);background:var(--card)}
+.google-btn:active:not(:disabled){transform:translateY(0)}
+.google-btn:focus-visible{outline:3px solid #4285f4;outline-offset:3px}
+.google-icon{flex-shrink:0}
+.google-btn-text{display:flex;align-items:center;justify-content:space-between;flex:1;gap:10px}
+.google-btn-title{font-size:15px;font-weight:700}
+.google-btn-badge{background:var(--green-soft);color:var(--green);font-size:10px;font-weight:800;letter-spacing:.05em;padding:3px 8px;border-radius:9999px;border:1px solid var(--border);text-transform:uppercase}
+.google-subtext{font-size:11px;color:var(--muted);text-align:center;line-height:1.5;margin-top:4px}
+.spinner{animation:spin 1s linear infinite;color:#4285f4}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Divider */
+.pro-divider{display:flex;align-items:center;gap:14px;margin-block:22px 18px}
+.pro-divider-line{flex:1;height:1px;background:var(--border)}
+.pro-divider-text{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+
+/* Railway Official SSO Button */
+.railway-sso-container{display:flex;flex-direction:column;gap:8px}
+.pro-sso-btn{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:50px;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600;border:1px solid var(--border);background:var(--surface);transition:all .2s ease}
+.pro-sso-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy);transform:translateY(-1px)}
+.sso-caption{font-size:11px;color:var(--muted);text-align:center}
+
+/* Demo Personas Grid */
+.demo-persona-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:22px}
+.persona-panel-title{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;color:var(--navy);letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px}
+.persona-chips-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.persona-chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px 8px;background:var(--bg);border:1px solid var(--border);border-radius:9px;font-size:11px;font-weight:700;color:var(--ink);cursor:pointer;transition:all .15s cubic-bezier(.16,1,.3,1);text-align:center;min-height:54px}
+.persona-chip:hover:not(:disabled){border-color:var(--green);transform:translateY(-1px);background:var(--green-soft);color:var(--green)}
+.persona-chip:active:not(:disabled){transform:translateY(0)}
+.persona-chip-active{border-color:var(--green);background:var(--green-soft);color:var(--green);box-shadow:0 0 0 2px var(--green)}
+
+.pro-register-row{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);margin-top:22px;padding-top:16px;font-size:13px}
+.pro-demo-note{border-top:1px solid var(--border);padding-top:14px;margin-top:16px;font-size:11px;color:var(--muted);line-height:1.6}
+
+@media(max-width:960px){
+  .login-grid-pro{grid-template-columns:1fr;gap:40px}
+  .login-card-pro{max-width:540px;width:100%;margin-inline:auto}
+  .pro-heading{font-size:38px}
+  .persona-chips-grid{grid-template-columns:1fr}
+}
