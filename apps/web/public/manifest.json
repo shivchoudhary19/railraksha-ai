@@ -1,0 +1,27 @@
+{
+  "name": "RailRaksha AI - Railway Digital Safety",
+  "short_name": "RailRaksha",
+  "description": "Real-time anti-phishing protection, official registry verification, and scam analysis for Indian Railway travelers.",
+  "start_url": "/en/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0B1F3A",
+  "theme_color": "#0B1F3A",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "share_target": {
+    "action": "/en/verify",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}

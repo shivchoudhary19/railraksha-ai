@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "RailRaksha Shield",
+  "short_name": "RailRaksha",
+  "version": "1.0.0",
+  "description": "Cryptographically signed real-time anti-phishing protection for Indian Railway travelers. Detects fake Tatkal bots, cloned IRCTC portals, and malicious payment links.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "alarms"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "RailRaksha Shield"
+  },
+  "icons": {
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  }
+}

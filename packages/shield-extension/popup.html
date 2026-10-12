@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RailRaksha Shield</title>
+  <style>
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0B1F3A;
+      color: #F8FAFC;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1E293B;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .lang-btn {
+      background: #1E293B;
+      border: 1px solid #334155;
+      color: #94A3B8;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .card {
+      background: #112240;
+      border: 1px solid #1E3A8A;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .domain-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94A3B8;
+    }
+    .domain-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 4px 0 8px 0;
+      word-break: break-all;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .status-official {
+      background: #166534;
+      color: #BBF7D0;
+    }
+    .status-blocked {
+      background: #991B1B;
+      color: #FECACA;
+    }
+    .status-unknown {
+      background: #334155;
+      color: #CBD5E1;
+    }
+    .feed-info {
+      font-size: 11px;
+      color: #94A3B8;
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn {
+      display: block;
+      text-align: center;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: #16A34A;
+      color: #FFFFFF;
+      border: none;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #334155;
+      color: #CBD5E1;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <span>🛡️</span>
+      <span id="title-text">RailRaksha Shield</span>
+    </div>
+    <button id="toggle-lang" class="lang-btn">हिंदी</button>
+  </div>
+
+  <div class="card">
+    <div class="domain-label" id="label-current">Current Domain</div>
+    <div class="domain-name" id="current-domain">Checking...</div>
+    <div id="verdict-container">
+      <span class="status-badge status-unknown" id="verdict-badge">Checking</span>
+    </div>
+    <div class="feed-info">
+      <span id="feed-ver">Feed: v1</span>
+      <span id="feed-status">Protected</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a href="https://localhost:3000/en/reports" target="_blank" class="btn btn-outline" id="btn-report">Report Phishing Site</a>
+    <a href="https://localhost:3000/en/verify" target="_blank" class="btn btn-primary" id="btn-verify">Official Directory</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

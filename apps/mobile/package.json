@@ -1,0 +1,23 @@
+{
+  "name": "@railraksha/mobile",
+  "version": "1.0.0",
+  "description": "RailRaksha Citizen & Student Mobile App (Expo / React Native, Play Integrity, Offline Cache)",
+  "main": "src/App.tsx",
+  "type": "module",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "test": "node --test test/mobile-smoke.test.ts"
+  },
+  "dependencies": {
+    "expo": "^51.0.0",
+    "react": "18.2.0",
+    "react-native": "0.74.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "typescript": "^5.4.0"
+  },
+  "private": true
+}

@@ -1,0 +1,11 @@
+.git
+.env
+.env.*
+node_modules
+.local
+.venv
+**/.next
+**/__pycache__
+**/coverage
+**/test-results
+**/.turbo

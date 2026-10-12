@@ -1,0 +1,128 @@
+name: railraksha
+services:
+  clamav:
+    build: {context: ., dockerfile: infra/clamav/Dockerfile}
+    volumes: ["clamav-data:/var/lib/clamav"]
+    networks: [malware]
+    mem_limit: 2g
+    cpus: 1
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck: {test: ["CMD-SHELL", "printf 'zPING\\0' | nc -w 3 localhost 3310 | grep -q PONG"], interval: 15s, timeout: 5s, retries: 60, start_period: 120s}
+  postgres:
+    build: {context: ., dockerfile: infra/postgres/Dockerfile}
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run make bootstrap}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+      OWNER_DB_PASSWORD: ${OWNER_DB_PASSWORD}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck: {test: ["CMD-SHELL", "pg_isready -U postgres"], interval: 5s, timeout: 3s, retries: 30}
+    networks: [data]
+  redis:
+    build: {context: ., dockerfile: infra/redis/Dockerfile}
+    environment: {REDIS_PASSWORD: "${REDIS_PASSWORD}"}
+    command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\" --appendonly no"]
+    ports: ["127.0.0.1:6379:6379"]
+    healthcheck: {test: ["CMD-SHELL", "redis-cli --no-auth-warning -a \"$$REDIS_PASSWORD\" ping"], interval: 5s, timeout: 3s, retries: 30}
+    networks: [data]
+  mailpit:
+    image: axllent/mailpit:v1.31.5
+    ports: ["127.0.0.1:8025:8025"]
+    environment: {MP_MAX_MESSAGES: "100", MP_SMTP_AUTH_ACCEPT_ANY: "0"}
+    networks: [identity]
+  keycloak:
+    build: {context: ., dockerfile: infra/keycloak/Dockerfile}
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: http://localhost:8081
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
+      DEMO_PASSWORD: ${DEMO_PASSWORD}
+    ports: ["127.0.0.1:8081:8080"]
+    volumes: ["./infra/keycloak/railraksha-realm.json:/opt/keycloak/data/import/railraksha-realm.json:ro"]
+    depends_on: {postgres: {condition: service_healthy}}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/9000; printf \"GET /health/ready HTTP/1.0\\r\\n\\r\\n\" >&3; grep -q \"200\" <&3'"]
+      interval: 10s
+      timeout: 5s
+      retries: 40
+      start_period: 40s
+    networks: [identity, data]
+  migrate:
+    build: {context: ., dockerfile: services/api/Dockerfile}
+    environment: {DATABASE_URL: "${MIGRATION_DATABASE_URL}"}
+    command: ["alembic", "upgrade", "head"]
+    depends_on: {postgres: {condition: service_healthy}}
+    networks: [data]
+  api:
+    build: {context: ., dockerfile: services/api/Dockerfile}
+    environment:
+      APP_ENV: ${APP_ENV}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      OIDC_ISSUER: ${OIDC_ISSUER}
+      OIDC_INTERNAL_ISSUER: ${OIDC_INTERNAL_ISSUER}
+      OIDC_API_AUDIENCE: ${OIDC_API_AUDIENCE}
+      EVIDENCE_MASTER_KEY: ${EVIDENCE_MASTER_KEY}
+      S3_ACCESS_KEY: ${GARAGE_DEFAULT_ACCESS_KEY}
+      S3_SECRET_KEY: ${GARAGE_DEFAULT_SECRET_KEY}
+      S3_BUCKET: ${GARAGE_DEFAULT_BUCKET}
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+      keycloak: {condition: service_healthy}
+    healthcheck: {test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready')"], interval: 10s, timeout: 8s, retries: 30}
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [data, identity, storage, malware]
+  web:
+    build: {context: ., dockerfile: apps/web/Dockerfile}
+    environment:
+      APP_ENV: ${APP_ENV}
+      APP_ORIGIN: ${APP_ORIGIN}
+      API_INTERNAL_URL: ${API_INTERNAL_URL}
+      REDIS_URL: ${REDIS_URL}
+      OIDC_ISSUER: ${OIDC_ISSUER}
+      OIDC_INTERNAL_ISSUER: ${OIDC_INTERNAL_ISSUER}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
+      OIDC_API_AUDIENCE: ${OIDC_API_AUDIENCE}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE}
+      SECURITY_CONTACT: ${SECURITY_CONTACT}
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on: {api: {condition: service_healthy}}
+    healthcheck: {test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/en').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"], interval: 10s, timeout: 5s, retries: 30}
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [data, identity]
+  storage:
+    image: dxflrs/garage:v2.4.1
+    command: ["/garage", "server", "--single-node", "--default-bucket"]
+    environment:
+      GARAGE_DEFAULT_ACCESS_KEY: ${GARAGE_DEFAULT_ACCESS_KEY}
+      GARAGE_DEFAULT_SECRET_KEY: ${GARAGE_DEFAULT_SECRET_KEY}
+      GARAGE_DEFAULT_BUCKET: ${GARAGE_DEFAULT_BUCKET}
+    ports: ["127.0.0.1:3900:3900"]
+    volumes: ["./.local/garage.toml:/etc/garage.toml:ro", "garage-data:/var/lib/garage"]
+    healthcheck: {test: ["CMD", "/garage", "status"], interval: 10s, timeout: 5s, retries: 30}
+    networks: [storage]
+networks:
+  malware:
+  data:
+  identity:
+  storage:
+volumes:
+  clamav-data:
+  postgres-data:
+  garage-data:

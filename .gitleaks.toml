@@ -1,0 +1,5 @@
+[extend]
+useDefault = true
+[[allowlists]]
+description = "Generated local dependencies, runtime state and test reports (never committed)"
+paths = ['''(^|/)(node_modules|\.next|\.venv|\.local|\.pnpm-store|coverage|test-results|playwright-report|\.git)/''', '''(^|/)\.env$''']

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ],
+      "passThroughEnv": [
+        "SWC_NATIVE_BINDING_CACHE"
+      ],
+      "env": [
+        "APP_ENV",
+        "APP_ORIGIN"
+      ]
+    },
+    "lint": {},
+    "typecheck": {},
+    "test": {
+      "outputs": [
+        "coverage/**"
+      ]
+    }
+  }
+}

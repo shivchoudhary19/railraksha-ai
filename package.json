@@ -1,0 +1,28 @@
+{
+  "name": "railraksha",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck && pnpm --filter @railraksha/web exec tsc --project ../../tests/tsconfig.json",
+    "test": "turbo run test",
+    "e2e": "playwright test",
+    "e2e:public": "playwright test public.spec.ts",
+    "audit:deps": "pnpm audit",
+    "lighthouse": "node scripts/lighthouse.mjs",
+    "lighthouse:public": "node scripts/lighthouse.mjs --public-only"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "@playwright/test": "^1.55.0",
+    "@axe-core/playwright": "^4.10.0",
+    "dotenv": "^17.2.0",
+    "lighthouse": "13.5.0",
+    "chrome-launcher": "^1.2.1"
+  }
+}

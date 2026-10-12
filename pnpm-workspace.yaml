@@ -1,0 +1,19 @@
+packages:
+  - apps/web
+  - packages/*
+storeDir: .local/pnpm-store
+confirmModulesPurge: false
+allowBuilds:
+  sharp: true
+  esbuild: true
+  '@swc/core': true
+  '@parcel/watcher': true
+  unrs-resolver: true
+
+blockExoticSubdeps: true
+minimumReleaseAge: 10080
+trustPolicy: no-downgrade
+overrides:
+  postcss: ^8.5.18
+  tinypool: 2.2.0
+  semver: ^7.7.3

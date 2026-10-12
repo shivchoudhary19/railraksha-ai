@@ -1,0 +1,120 @@
+global:
+  environment: production
+  region: ap-south-1 # Strict Indian Data Residency
+  dataClassification: RESTRICTED
+
+api:
+  replicaCount: 3
+  image:
+    repository: railraksha/api
+    tag: 1.0.0
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  probes:
+    liveness:
+      path: /health
+      initialDelaySeconds: 15
+      periodSeconds: 10
+    readiness:
+      path: /ready
+      initialDelaySeconds: 20
+      periodSeconds: 5
+  env:
+    APP_ENV: production
+    DATABASE_POOL_SIZE: 50
+    DATABASE_MAX_OVERFLOW: 20
+    REDIS_CLUSTER_ENABLED: true
+    KAFKA_BOOTSTRAP_SERVERS: "kafka-cluster:9092"
+    VAULT_ADDR: "https://vault.internal.railraksha.gov.in"
+
+web:
+  replicaCount: 3
+  image:
+    repository: railraksha/web
+    tag: 1.0.0
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3000
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 70
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+    nginx.ingress.kubernetes.io/limit-rps: "500"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: railraksha.gov.in
+      paths:
+        - path: /
+          pathType: Prefix
+          service: web
+        - path: /v1
+          pathType: Prefix
+          service: api
+  tls:
+    - secretName: railraksha-gov-tls
+      hosts:
+        - railraksha.gov.in
+
+networkPolicy:
+  enabled: true
+  ingressDefaultDeny: true
+  allowNamespaces:
+    - kube-system
+    - ingress-nginx
+    - monitoring
+
+postgresql:
+  architecture: replication
+  readReplicas: 2
+  pgbouncer:
+    enabled: true
+    poolMode: transaction
+    maxClientConn: 5000
+    defaultPoolSize: 50
+
+redis:
+  architecture: cluster
+  cluster:
+    nodes: 6
+    replicas: 1
+
+kafka:
+  enabled: true
+  replicas: 3
+  topics:
+    - name: platform.events
+      partitions: 12
+      replicationFactor: 3

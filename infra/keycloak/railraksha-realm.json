@@ -1,0 +1,485 @@
+{
+  "realm": "railraksha",
+  "loginTheme": "railraksha",
+  "displayName": "RailRaksha AI \u00b7 DEMO",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "verifyEmail": true,
+  "resetPasswordAllowed": true,
+  "rememberMe": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "failureFactor": 5,
+  "maxFailureWaitSeconds": 900,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 900,
+  "ssoSessionMaxLifespan": 28800,
+  "passwordPolicy": "length(14) and hashAlgorithm(argon2) and notUsername and notEmail",
+  "roles": {
+    "realm": [
+      {
+        "name": "citizen",
+        "description": "RailRaksha citizen"
+      },
+      {
+        "name": "student",
+        "description": "RailRaksha student"
+      },
+      {
+        "name": "verified_reporter",
+        "description": "RailRaksha verified_reporter"
+      },
+      {
+        "name": "analyst",
+        "description": "RailRaksha analyst"
+      },
+      {
+        "name": "soc_lead",
+        "description": "RailRaksha soc_lead"
+      },
+      {
+        "name": "rpf_cyber",
+        "description": "RailRaksha rpf_cyber"
+      },
+      {
+        "name": "asset_owner",
+        "description": "RailRaksha asset_owner"
+      },
+      {
+        "name": "partner_dev",
+        "description": "RailRaksha partner_dev"
+      },
+      {
+        "name": "admin",
+        "description": "RailRaksha admin"
+      },
+      {
+        "name": "super_admin",
+        "description": "RailRaksha super_admin"
+      },
+      {
+        "name": "default-roles-railraksha",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "citizen"
+          ]
+        }
+      }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles-railraksha",
+    "composite": true,
+    "clientRole": false
+  },
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyDigits": 6,
+  "otpPolicyPeriod": 30,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyInitialCounter": 0,
+  "webAuthnPolicyPasswordlessRpEntityName": "RailRaksha AI",
+  "webAuthnPolicyPasswordlessRpId": "localhost",
+  "webAuthnPolicyPasswordlessSignatureAlgorithms": [
+    "ES256",
+    "RS256"
+  ],
+  "webAuthnPolicyPasswordlessAttestationConveyancePreference": "none",
+  "webAuthnPolicyPasswordlessRequireResidentKey": "Yes",
+  "webAuthnPolicyPasswordlessUserVerificationRequirement": "required",
+  "webAuthnPolicyPasswordlessPasskeysEnabled": true,
+  "requiredActions": [
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "providerId": "VERIFY_EMAIL",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 0,
+      "config": {}
+    },
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "providerId": "UPDATE_PASSWORD",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 10,
+      "config": {}
+    },
+    {
+      "alias": "CONFIGURE_TOTP",
+      "name": "Configure OTP",
+      "providerId": "CONFIGURE_TOTP",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 20,
+      "config": {}
+    },
+    {
+      "alias": "UPDATE_PROFILE",
+      "name": "Update Profile",
+      "providerId": "UPDATE_PROFILE",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 30,
+      "config": {}
+    },
+    {
+      "alias": "webauthn-register",
+      "name": "Webauthn Register",
+      "providerId": "webauthn-register",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 40,
+      "config": {}
+    },
+    {
+      "alias": "webauthn-register-passwordless",
+      "name": "Webauthn Register Passwordless",
+      "providerId": "webauthn-register-passwordless",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 50,
+      "config": {}
+    }
+  ],
+  "smtpServer": {
+    "host": "mailpit",
+    "port": "1025",
+    "from": "security@railraksha.test",
+    "fromDisplayName": "RailRaksha DEMO",
+    "ssl": "false",
+    "starttls": "false",
+    "auth": "false"
+  },
+  "eventsEnabled": true,
+  "eventsExpiration": 15552000,
+  "eventsListeners": [
+    "jboss-logging"
+  ],
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": false,
+  "clients": [
+    {
+      "clientId": "railraksha-web",
+      "name": "RailRaksha AI",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "${OIDC_CLIENT_SECRET}",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:3000/api/auth/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:3000"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/en##http://localhost:3000/hi"
+      },
+      "defaultClientScopes": [
+        "basic",
+        "profile",
+        "email",
+        "roles"
+      ],
+      "protocolMappers": [
+        {
+          "name": "API audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "railraksha-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "railraksha-api",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": true,
+      "publicClient": false
+    }
+  ],
+  "users": [
+    {
+      "username": "demo.citizen",
+      "email": "demo.citizen@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "DEMO",
+      "lastName": "Citizen",
+      "realmRoles": [
+        "citizen"
+      ],
+      "requiredActions": [],
+      "attributes": {
+        "demo": [
+          "true"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "demo.student",
+      "email": "demo.student@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "DEMO",
+      "lastName": "Student",
+      "realmRoles": [
+        "citizen",
+        "student"
+      ],
+      "requiredActions": [],
+      "attributes": {
+        "demo": [
+          "true"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "demo.verified_reporter",
+      "email": "demo.verified_reporter@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "DEMO",
+      "lastName": "Verified Reporter",
+      "realmRoles": [
+        "citizen",
+        "verified_reporter"
+      ],
+      "requiredActions": [],
+      "attributes": {
+        "demo": [
+          "true"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "demo.analyst",
+      "email": "demo.analyst@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "DEMO",
+      "lastName": "Analyst",
+      "realmRoles": [
+        "citizen",
+        "analyst"
+      ],
+      "requiredActions": [
+        "CONFIGURE_TOTP"
+      ],
+      "attributes": {
+        "demo": [
+          "true"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "demo.soc_lead",
+      "email": "demo.soc_lead@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "DEMO",
+      "lastName": "Soc Lead",
+      "realmRoles": [
+        "citizen",
+        "soc_lead"
+      ],
+      "requiredActions": [
+        "CONFIGURE_TOTP"
+      ],
+      "attributes": {
+        "demo": [
+          "true"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "demo.rpf_cyber",
+      "email": "demo.rpf_cyber@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "DEMO",
+      "lastName": "Rpf Cyber",
+      "realmRoles": [
+        "citizen",
+        "rpf_cyber"
+      ],
+      "requiredActions": [
+        "CONFIGURE_TOTP"
+      ],
+      "attributes": {
+        "demo": [
+          "true"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "demo.asset_owner",
+      "email": "demo.asset_owner@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "DEMO",
+      "lastName": "Asset Owner",
+      "realmRoles": [
+        "citizen",
+        "asset_owner"
+      ],
+      "requiredActions": [],
+      "attributes": {
+        "demo": [
+          "true"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "demo.partner_dev",
+      "email": "demo.partner_dev@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "DEMO",
+      "lastName": "Partner Dev",
+      "realmRoles": [
+        "citizen",
+        "partner_dev"
+      ],
+      "requiredActions": [],
+      "attributes": {
+        "demo": [
+          "true"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "demo.admin",
+      "email": "demo.admin@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "DEMO",
+      "lastName": "Admin",
+      "realmRoles": [
+        "citizen",
+        "admin"
+      ],
+      "requiredActions": [
+        "CONFIGURE_TOTP"
+      ],
+      "attributes": {
+        "demo": [
+          "true"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "demo.super_admin",
+      "email": "demo.super_admin@example.test",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "DEMO",
+      "lastName": "Super Admin",
+      "realmRoles": [
+        "citizen",
+        "super_admin"
+      ],
+      "requiredActions": [
+        "CONFIGURE_TOTP"
+      ],
+      "attributes": {
+        "demo": [
+          "true"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    }
+  ],
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "en",
+    "hi"
+  ],
+  "defaultLocale": "en"
+}

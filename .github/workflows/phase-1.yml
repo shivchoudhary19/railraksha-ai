@@ -1,0 +1,46 @@
+name: Phase 1 quality gate
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 11.25.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Install frozen application and test dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          python -m venv .venv
+          .venv/bin/pip install -c services/api/requirements.lock -e 'services/api[dev]'
+          pnpm exec playwright install --with-deps chromium
+      - name: Lint, types and all unit tests
+        run: |
+          make lint
+          make typecheck
+          make test
+      - name: Start the complete development stack
+        run: make dev
+      - name: Browser and PostgreSQL regression checks
+        run: |
+          make e2e
+          make migrations
+          pnpm lighthouse
+      - name: Security scans including every container image
+        run: |
+          make tools PYTHON=.venv/bin/python
+          make security PYTHON=.venv/bin/python
+      - name: Stop services
+        if: always()
+        run: docker compose down

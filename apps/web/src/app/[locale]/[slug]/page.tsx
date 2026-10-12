@@ -1,0 +1,12 @@
+import {getTranslations} from 'next-intl/server';
+import {notFound} from 'next/navigation';
+import Link from 'next/link';
+import {ArrowLeft,ArrowUpRight,BookOpen,ShieldCheck} from 'lucide-react';
+const pages={about:'about','how-it-works':'how','safety-tips':'tips',contact:'contact',privacy:'privacy',terms:'terms','responsible-disclosure':'disclosure'} as const;
+export async function generateMetadata({params}:{params:Promise<{locale:string;slug:string}>}){const {locale,slug}=await params;const key=pages[slug as keyof typeof pages];if(!key)return {};const t=await getTranslations({locale,namespace:`pages.${key}`});return {title:t('title')};}
+export default async function ContentPage({params}:{params:Promise<{locale:string;slug:string}>}){
+  const {locale,slug}=await params;const key=pages[slug as keyof typeof pages];if(!key)notFound();
+  const t=await getTranslations(`pages.${key}`);const common=await getTranslations('common');
+  const count=key==='tips'?5:key==='privacy'?4:3;
+  return <section className="container content-page"><Link className="back-link" href={`/${locale}`}><ArrowLeft size={16} aria-hidden="true"/>{common('back')}</Link><div className="content-head"><span className="content-icon">{key==='tips'?<BookOpen size={30} aria-hidden="true"/>:<ShieldCheck size={30} aria-hidden="true"/>}</span><span className="eyebrow">{t('label')}</span><h1>{t('title')}</h1><p>{t('lead')}</p></div><div className="content-body">{Array.from({length:count},(_,i)=><div className="content-point" key={i}><span className="point-number">{String(i+1).padStart(2,'0')}</span><p>{t(`p${i+1}`)}</p></div>)}{key==='tips'&&<div className="source-links"><a href={'https://lt.ncmailer.irctc.co.in/irctc_p3/vm.php?m=991&u=36f4c146494fc16b152676955b7668a0'} target="_blank" rel="noopener noreferrer">{t('source')}<ArrowUpRight size={16} aria-hidden="true"/></a><a href="https://www.pib.gov.in/newsite/PrintRelease.aspx?relid=214486" target="_blank" rel="noopener noreferrer">{t('recruitment')}<ArrowUpRight size={16} aria-hidden="true"/></a></div>}{key==='contact'&&<div className="source-links"><a href="https://cybercrime.gov.in/" target="_blank" rel="noopener noreferrer">{t('portal')}<ArrowUpRight size={16} aria-hidden="true"/></a><a href="https://www.irctc.co.in/" target="_blank" rel="noopener noreferrer">{t('railway')}<ArrowUpRight size={16} aria-hidden="true"/></a></div>}{key==='disclosure'&&<Link className="text-link" href="/.well-known/security.txt">{t('policy')}<ArrowUpRight size={16} aria-hidden="true"/></Link>}</div></section>;
+}

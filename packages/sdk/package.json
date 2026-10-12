@@ -1,0 +1,19 @@
+{
+  "name": "@railraksha/sdk",
+  "version": "1.0.0",
+  "description": "Official TypeScript/JavaScript SDK for RailRaksha Partner Anti-Fraud & Verification API",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types test/sdk-smoke.test.ts"
+  },
+  "keywords": [
+    "railway",
+    "fraud-prevention",
+    "irctc",
+    "anti-phishing",
+    "verification"
+  ],
+  "author": "RailRaksha Digital Security Team",
+  "license": "Apache-2.0"
+}

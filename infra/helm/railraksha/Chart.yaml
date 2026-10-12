@@ -1,0 +1,15 @@
+apiVersion: v2
+name: railraksha
+description: Production-grade Helm chart for RailRaksha AI Platform (High Availability, HPA, Zero-Trust, DPDP-Ready)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - railway
+  - security
+  - antifraud
+  - zero-trust
+  - dpdp
+maintainers:
+  - name: RailRaksha Security Team
+    email: security@railraksha.gov.in
