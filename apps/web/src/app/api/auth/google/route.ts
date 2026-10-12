@@ -11,6 +11,7 @@ const firebaseAuthKeys=createRemoteJWKSet(new URL('https://www.googleapis.com/se
 
 interface GoogleAuthBody {
   idToken?: string;
+  projectId?: string;
   demoPersona?: 'citizen'|'verified_reporter'|'rpf_cyber'|'analyst';
   persona?: 'citizen'|'verified_reporter'|'rpf_cyber'|'analyst';
   locale?: string;
@@ -54,15 +55,15 @@ export async function POST(request:NextRequest){
       }catch{
         // Try verifying against Firebase Auth certs
         try{
-          const projectId=process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID||'railraksha-defense';
-          const {payload}=await jwtVerify(body.idToken,firebaseAuthKeys,{
-            issuer:`https://securetoken.google.com/${projectId}`,
-          });
-          if(payload.sub){
-            sub=`google_${payload.sub}`;
-            name=typeof payload.name==='string'?payload.name:(typeof payload.email==='string'?payload.email.split('@')[0]:'Firebase User');
-            email=typeof payload.email==='string'?payload.email:email;
-            verified=true;
+          const targetProject=body.projectId||process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+          const {payload}=await jwtVerify(body.idToken,firebaseAuthKeys);
+          if(payload.sub&&typeof payload.iss==='string'&&payload.iss.startsWith('https://securetoken.google.com/')){
+            if(!targetProject||payload.aud===targetProject||payload.iss===`https://securetoken.google.com/${targetProject}`){
+              sub=`google_${payload.sub}`;
+              name=typeof payload.name==='string'?payload.name:(typeof payload.email==='string'?payload.email.split('@')[0]:'Google User');
+              email=typeof payload.email==='string'?payload.email:email;
+              verified=true;
+            }
           }
         }catch{
           // Token verification failed or expired

@@ -141,3 +141,38 @@ test('Google Auth API: rejects untrusted origins',async({request})=>{
   });
   expect(response.status()).toBe(403);
 });
+
+test('Firebase Setup Modal: opens, allows pasting and saving custom keys, persists in localStorage, and passes accessibility',async({page})=>{
+  await page.goto('/en/login');
+  await expect(page.locator('.firebase-config-toggle-btn')).toBeVisible();
+
+  // Open modal
+  await page.locator('.firebase-config-toggle-btn').click();
+  await expect(page.locator('.firebase-modal-panel')).toBeVisible();
+  await checkAccessibility(page);
+
+  // Paste snippet
+  const sampleSnippet = `const firebaseConfig = {
+    apiKey: "AIzaSyDummyTestKey123456789",
+    authDomain: "my-custom-rail.firebaseapp.com",
+    projectId: "my-custom-rail",
+    appId: "1:999999999:web:testtest"
+  };`;
+  await page.locator('#fb-snippet').fill(sampleSnippet);
+
+  // Inputs auto-populate
+  await expect(page.locator('#fb-apikey')).toHaveValue('AIzaSyDummyTestKey123456789');
+  await expect(page.locator('#fb-projectid')).toHaveValue('my-custom-rail');
+
+  // Save config
+  await page.getByRole('button',{name:/Save & Connect/i}).click();
+
+  // Modal closes and status bar reflects the new project
+  await expect(page.locator('.firebase-modal-panel')).not.toBeVisible();
+  await expect(page.locator('.firebase-status-label')).toContainText('my-custom-rail');
+
+  // Stored in localStorage
+  const stored = await page.evaluate(() => localStorage.getItem('railraksha_firebase_config'));
+  expect(stored).toContain('my-custom-rail');
+});
+

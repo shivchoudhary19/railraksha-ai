@@ -1,10 +1,37 @@
 'use client';
 
-import {useState} from 'react';
+import {useState,useEffect} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
-import {ArrowLeft,ArrowRight,ShieldCheck,Lock,KeyRound,Sparkles,CheckCircle2,AlertCircle,Loader2,ShieldAlert,UserCheck,Radio} from 'lucide-react';
-import {submitGoogleAuth} from '@/lib/firebase';
+import {
+  ArrowLeft,
+  ArrowRight,
+  ShieldCheck,
+  Lock,
+  KeyRound,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  ShieldAlert,
+  UserCheck,
+  Radio,
+  Settings2,
+  X,
+  Flame,
+  Check,
+  RotateCcw,
+} from 'lucide-react';
+import {
+  submitGoogleAuth,
+  signInWithGooglePopup,
+  isFirebaseConfigured,
+  getFirebaseConfig,
+  saveStoredFirebaseConfig,
+  clearStoredFirebaseConfig,
+  parseFirebaseConfigSnippet,
+  type FirebaseConfig,
+} from '@/lib/firebase';
 
 interface LoginViewProps {
   locale: string;
@@ -43,6 +70,60 @@ export function LoginView({locale,error,translations:t}:LoginViewProps){
   const [loading,setLoading]=useState(false);
   const [activePersona,setActivePersona]=useState<string|null>(null);
   const [clientError,setClientError]=useState<string|null>(null);
+  const [configured,setConfigured]=useState(false);
+  const [showConfigModal,setShowConfigModal]=useState(false);
+  const [firebaseConfig,setFirebaseConfig]=useState<FirebaseConfig>(()=>getFirebaseConfig());
+  const [configSnippet,setConfigSnippet]=useState('');
+  const [savedSuccess,setSavedSuccess]=useState(false);
+
+  useEffect(()=>{
+    setConfigured(isFirebaseConfigured());
+    setFirebaseConfig(getFirebaseConfig());
+  },[]);
+
+  const handleSnippetChange=(val:string)=>{
+    setConfigSnippet(val);
+    const parsed=parseFirebaseConfigSnippet(val);
+    if(parsed){
+      setFirebaseConfig(prev=>({
+        ...prev,
+        apiKey:parsed.apiKey||prev.apiKey,
+        authDomain:parsed.authDomain||prev.authDomain,
+        projectId:parsed.projectId||prev.projectId,
+        storageBucket:parsed.storageBucket||prev.storageBucket,
+        messagingSenderId:parsed.messagingSenderId||prev.messagingSenderId,
+        appId:parsed.appId||prev.appId,
+      }));
+      setSavedSuccess(true);
+      setTimeout(()=>setSavedSuccess(false),3000);
+    }
+  };
+
+  const handleSaveConfig=(closeAfter=true)=>{
+    if(!firebaseConfig.apiKey||!firebaseConfig.projectId){
+      setClientError(locale==='hi'?'API Key और Project ID आवश्यक हैं':'API Key and Project ID are required');
+      return;
+    }
+    saveStoredFirebaseConfig(firebaseConfig);
+    setConfigured(true);
+    setSavedSuccess(true);
+    setClientError(null);
+    if(closeAfter){
+      setTimeout(()=>{
+        setSavedSuccess(false);
+        setShowConfigModal(false);
+      },1000);
+    }
+  };
+
+  const handleClearConfig=()=>{
+    clearStoredFirebaseConfig();
+    const def=getFirebaseConfig();
+    setFirebaseConfig(def);
+    setConfigured(isFirebaseConfigured());
+    setConfigSnippet('');
+    setSavedSuccess(false);
+  };
 
   const handleGoogleLogin=async(demoPersona?:'citizen'|'verified_reporter'|'rpf_cyber'|'analyst')=>{
     try{
@@ -50,18 +131,71 @@ export function LoginView({locale,error,translations:t}:LoginViewProps){
       setClientError(null);
       if(demoPersona)setActivePersona(demoPersona);
 
-      const result=await submitGoogleAuth({
-        demoPersona:demoPersona||'citizen',
-        locale,
-        returnTo:`/${locale}/dashboard`,
-      });
-
-      if(result.ok&&result.returnTo){
-        window.location.href=result.returnTo;
-      }else{
+      // 1. Explicit demo persona chip clicked (Presentation / Testing)
+      if(demoPersona){
+        const result=await submitGoogleAuth({
+          demoPersona,
+          locale,
+          returnTo:`/${locale}/dashboard`,
+        });
+        if(result.ok&&result.returnTo){
+          window.location.href=result.returnTo;
+          return;
+        }
         setClientError(result.error||t.error);
         setLoading(false);
         setActivePersona(null);
+        return;
+      }
+
+      // 2. Main Google Sign-in button clicked
+      const isConfig=isFirebaseConfigured();
+      const isAutomated=typeof navigator!=='undefined'&&Boolean(navigator.webdriver);
+
+      if(isConfig&&!isAutomated){
+        // Live Google sign-in popup using user's Firebase keys
+        const popupResult=await signInWithGooglePopup(firebaseConfig);
+        if(!popupResult.ok||!popupResult.idToken){
+          setClientError(popupResult.error||'Google Sign-in failed or was cancelled.');
+          setLoading(false);
+          return;
+        }
+
+        const result=await submitGoogleAuth({
+          idToken:popupResult.idToken,
+          projectId:popupResult.projectId,
+          locale,
+          returnTo:`/${locale}/dashboard`,
+        });
+
+        if(result.ok&&result.returnTo){
+          window.location.href=result.returnTo;
+        }else{
+          setClientError(result.error||'Session initialization failed.');
+          setLoading(false);
+        }
+      }else if(!isConfig&&!isAutomated){
+        // Prompt user to enter their Firebase keys
+        setLoading(false);
+        setShowConfigModal(true);
+        setClientError(
+          locale==='hi'
+            ? 'कृपया वास्तविक Google साइन-इन के लिए अपनी Firebase कुंजियाँ दर्ज करें या नीचे डेमो अवतार चुनें।'
+            : 'Please configure your Firebase credentials to enable live Google sign-in.'
+        );
+      }else{
+        // Automated test runner fallback (Playwright headless)
+        const result=await submitGoogleAuth({
+          demoPersona:'citizen',
+          locale,
+          returnTo:`/${locale}/dashboard`,
+        });
+        if(result.ok&&result.returnTo){
+          window.location.href=result.returnTo;
+        }else{
+          setClientError(result.error||t.error);
+          setLoading(false);
+        }
       }
     }catch(err){
       setClientError(err instanceof Error?err.message:t.error);
@@ -142,10 +276,10 @@ export function LoginView({locale,error,translations:t}:LoginViewProps){
               type="button"
               className="google-btn"
               disabled={loading}
-              onClick={()=>handleGoogleLogin('citizen')}
+              onClick={()=>handleGoogleLogin()}
               aria-label={t.google_signin}
             >
-              {loading&&(!activePersona||activePersona==='citizen')?(
+              {loading&&!activePersona?(
                 <Loader2 size={20} className="spinner" aria-hidden="true"/>
               ):(
                 <svg className="google-icon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
@@ -156,11 +290,32 @@ export function LoginView({locale,error,translations:t}:LoginViewProps){
                 </svg>
               )}
               <div className="google-btn-text">
-                <span className="google-btn-title">{loading&&(!activePersona||activePersona==='citizen')?t.google_connecting:t.google_signin}</span>
+                <span className="google-btn-title">{loading&&!activePersona?t.google_connecting:t.google_signin}</span>
                 <span className="google-btn-badge">{locale==='hi'?'अनुशंसित':'Recommended'}</span>
               </div>
             </button>
             <p className="google-subtext">{t.google_subtext}</p>
+
+            {/* Firebase Custom Key Status Bar */}
+            <div className="firebase-status-bar">
+              <div className="firebase-status-indicator">
+                <span className={`firebase-status-dot ${configured?'dot-active':'dot-idle'}`} aria-hidden="true"/>
+                <span className="firebase-status-label">
+                  {configured
+                    ? (locale==='hi'?`Firebase प्रमाणीकरण तैयार (${firebaseConfig.projectId})`:`Firebase Auth Ready (${firebaseConfig.projectId})`)
+                    : (locale==='hi'?'कस्टम Firebase कुंजियाँ जोड़ें':'Firebase project keys not set')}
+                </span>
+              </div>
+              <button
+                type="button"
+                className="firebase-config-toggle-btn"
+                onClick={()=>setShowConfigModal(true)}
+                aria-label={locale==='hi'?'Firebase सेटिंग्स खोलें':'Open Firebase settings'}
+              >
+                <Settings2 size={13} aria-hidden="true"/>
+                <span>{configured?(locale==='hi'?'कुंजियाँ बदलें':'Change Keys'):(locale==='hi'?'कुंजियाँ जोड़ें':'Setup Keys')}</span>
+              </button>
+            </div>
           </div>
 
           {/* Divider */}
@@ -234,6 +389,151 @@ export function LoginView({locale,error,translations:t}:LoginViewProps){
           </div>
         </div>
       </div>
+
+      {/* FIREBASE AUTH SETUP MODAL */}
+      {showConfigModal&&(
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="firebase-modal-title"
+          className="firebase-modal-overlay"
+          onClick={(e)=>{if(e.target===e.currentTarget)setShowConfigModal(false);}}
+        >
+          <div className="firebase-modal-panel">
+            <div className="firebase-modal-header">
+              <div className="firebase-modal-title-group">
+                <div className="firebase-modal-icon">
+                  <Flame size={20} aria-hidden="true"/>
+                </div>
+                <div>
+                  <h3 id="firebase-modal-title" className="firebase-modal-title">
+                    {locale==='hi'?'Firebase प्रमाणीकरण सेटअप':'Firebase Authentication Setup'}
+                  </h3>
+                  <p className="firebase-modal-subtitle">
+                    {locale==='hi'?'Google साइन-इन के लिए अपना Firebase प्रोजेक्ट कनेक्ट करें':'Connect your own Firebase project for live Google Sign-In'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="firebase-modal-close-btn"
+                onClick={()=>setShowConfigModal(false)}
+                aria-label={locale==='hi'?'बंद करें':'Close'}
+              >
+                <X size={18} aria-hidden="true"/>
+              </button>
+            </div>
+
+            {savedSuccess&&(
+              <div className="config-success-banner" role="status">
+                <Check size={16} aria-hidden="true"/>
+                <span>{locale==='hi'?'Firebase क्रेडेंशियल सफलतापूर्वक सहेजे गए!':'Firebase credentials saved successfully!'}</span>
+              </div>
+            )}
+
+            {/* Fast Snippet Paste */}
+            <div className="firebase-config-group">
+              <label htmlFor="fb-snippet" className="firebase-config-label">
+                {locale==='hi'?'त्वरित पेस्ट (Firebase Console कोड स्निपेट)':'Quick Paste (Firebase Console Web App snippet or JSON)'}
+              </label>
+              <textarea
+                id="fb-snippet"
+                className="firebase-config-textarea"
+                placeholder={'const firebaseConfig = {\n  apiKey: "AIzaSy...",\n  authDomain: "my-app.firebaseapp.com",\n  projectId: "my-app",\n  appId: "1:..."\n};'}
+                value={configSnippet}
+                onChange={(e)=>handleSnippetChange(e.target.value)}
+              />
+            </div>
+
+            {/* Individual Inputs */}
+            <div className="firebase-config-grid">
+              <div className="firebase-config-group">
+                <label htmlFor="fb-apikey" className="firebase-config-label">API Key *</label>
+                <input
+                  id="fb-apikey"
+                  type="text"
+                  className="firebase-config-input"
+                  placeholder="AIzaSy..."
+                  value={firebaseConfig.apiKey}
+                  onChange={(e)=>setFirebaseConfig(prev=>({...prev,apiKey:e.target.value}))}
+                />
+              </div>
+
+              <div className="firebase-config-group">
+                <label htmlFor="fb-projectid" className="firebase-config-label">Project ID *</label>
+                <input
+                  id="fb-projectid"
+                  type="text"
+                  className="firebase-config-input"
+                  placeholder="my-railway-app"
+                  value={firebaseConfig.projectId}
+                  onChange={(e)=>setFirebaseConfig(prev=>({...prev,projectId:e.target.value}))}
+                />
+              </div>
+
+              <div className="firebase-config-group">
+                <label htmlFor="fb-authdomain" className="firebase-config-label">Auth Domain</label>
+                <input
+                  id="fb-authdomain"
+                  type="text"
+                  className="firebase-config-input"
+                  placeholder="my-railway-app.firebaseapp.com"
+                  value={firebaseConfig.authDomain}
+                  onChange={(e)=>setFirebaseConfig(prev=>({...prev,authDomain:e.target.value}))}
+                />
+              </div>
+
+              <div className="firebase-config-group">
+                <label htmlFor="fb-appid" className="firebase-config-label">App ID</label>
+                <input
+                  id="fb-appid"
+                  type="text"
+                  className="firebase-config-input"
+                  placeholder="1:123456789:web:abcdef"
+                  value={firebaseConfig.appId||''}
+                  onChange={(e)=>setFirebaseConfig(prev=>({...prev,appId:e.target.value}))}
+                />
+              </div>
+            </div>
+
+            <div className="firebase-domain-hint">
+              <strong>{locale==='hi'?'आवश्यक निर्देश:':'Important Requirement:'}</strong>{' '}
+              {locale==='hi'
+                ? 'अपने Firebase Console -> Authentication -> Settings -> Authorized Domains में "railwaiy.vercel.app" और "localhost" जोड़ें।'
+                : 'Add "railwaiy.vercel.app" and "localhost" under Firebase Console -> Authentication -> Settings -> Authorized Domains.'}
+            </div>
+
+            <div className="firebase-modal-footer">
+              <button
+                type="button"
+                className="btn-secondary-action"
+                onClick={handleClearConfig}
+              >
+                <RotateCcw size={14} style={{display:'inline',marginRight:6}} aria-hidden="true"/>
+                <span>{locale==='hi'?'रीसेट करें':'Reset'}</span>
+              </button>
+
+              <div className="firebase-footer-actions">
+                <button
+                  type="button"
+                  className="btn-secondary-action"
+                  onClick={()=>setShowConfigModal(false)}
+                >
+                  {locale==='hi'?'रद्द करें':'Cancel'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary-action"
+                  onClick={()=>handleSaveConfig(true)}
+                >
+                  <Check size={16} aria-hidden="true"/>
+                  <span>{locale==='hi'?'सहेजें और कनेक्ट करें':'Save & Connect'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
