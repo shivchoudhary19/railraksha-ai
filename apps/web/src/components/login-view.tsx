@@ -77,8 +77,10 @@ export function LoginView({locale,error,translations:t}:LoginViewProps){
   const [savedSuccess,setSavedSuccess]=useState(false);
 
   useEffect(()=>{
+    const active=getFirebaseConfig();
     setConfigured(isFirebaseConfigured());
-    setFirebaseConfig(getFirebaseConfig());
+    setFirebaseConfig(active);
+    setConfigSnippet(JSON.stringify(active,null,2));
   },[]);
 
   const handleSnippetChange=(val:string)=>{
@@ -121,7 +123,7 @@ export function LoginView({locale,error,translations:t}:LoginViewProps){
     const def=getFirebaseConfig();
     setFirebaseConfig(def);
     setConfigured(isFirebaseConfigured());
-    setConfigSnippet('');
+    setConfigSnippet(JSON.stringify(def,null,2));
     setSavedSuccess(false);
   };
 

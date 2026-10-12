@@ -152,17 +152,12 @@ export async function signInWithGooglePopup(customConfig?: FirebaseConfig): Prom
   }
 
   try {
-    const dynamicImport = <T = any>(url: string): Promise<T> => {
-      // Bypasses bundler AST analysis while utilizing native browser ESM imports
-      return (new Function('url', 'return import(url)'))(url);
-    };
-
-    const { initializeApp, getApps } = await dynamicImport(
-      'https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js'
-    );
-    const { getAuth, GoogleAuthProvider, signInWithPopup } = await dynamicImport(
-      'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js'
-    );
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const { initializeApp, getApps } = await import(/* webpackIgnore: true */ 'https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const { getAuth, GoogleAuthProvider, signInWithPopup } = await import(/* webpackIgnore: true */ 'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js');
 
     const appName = `railraksha-${cfg.projectId || 'app'}`;
     const apps = getApps();
