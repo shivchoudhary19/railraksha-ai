@@ -297,6 +297,16 @@ export function LoginView({locale,error,translations:t}:LoginViewProps){
               </div>
             </button>
             <p className="google-subtext">{t.google_subtext}</p>
+            <div className="google-oauth-fallback">
+              <a
+                href={`/api/auth/google/login?locale=${locale}`}
+                className="button button-outline google-direct-link"
+                title={locale==='hi'?'Google OAuth 2.0 सीधा साइन इन':'Direct Google OAuth 2.0 Sign In'}
+              >
+                <span>{locale==='hi'?'Google OAuth 2.0 सीधा साइन इन':'Direct Google OAuth 2.0 Sign In'}</span>
+                <ArrowRight size={14} aria-hidden="true"/>
+              </a>
+            </div>
 
             {/* Firebase Custom Key Status Bar */}
             <div className="firebase-status-bar">
@@ -511,7 +521,7 @@ export function LoginView({locale,error,translations:t}:LoginViewProps){
                 className="btn-secondary-action"
                 onClick={handleClearConfig}
               >
-                <RotateCcw size={14} style={{display:'inline',marginRight:6}} aria-hidden="true"/>
+                <RotateCcw size={14} className="reset-icon" aria-hidden="true"/>
                 <span>{locale==='hi'?'रीसेट करें':'Reset'}</span>
               </button>
 

@@ -19,11 +19,12 @@ async function checkAccessibility(page:Page){
   expect(results.violations.map(item=>item.id)).toEqual([]);
 }
 
-test('UI Pro Max: login page renders Google auth, railway SSO, security indicators and passes accessibility',async({page})=>{
+test('UI Pro Max: login page renders Google auth, direct OAuth option, railway SSO, security indicators and passes accessibility',async({page})=>{
   // 1. English Login View
   await page.goto('/en/login');
   await expect(page.locator('.google-btn')).toBeVisible();
   await expect(page.getByRole('button',{name:/Continue with Google/i})).toBeVisible();
+  await expect(page.locator('.google-oauth-fallback')).toBeVisible();
   await expect(page.locator('.pro-sso-btn')).toBeVisible();
   await expect(page.locator('.defense-beacon')).toBeVisible();
   await expect(page.locator('.demo-persona-panel')).toBeVisible();
@@ -142,6 +143,22 @@ test('Google Auth API: rejects untrusted origins',async({request})=>{
   expect(response.status()).toBe(403);
 });
 
+test('Direct Google OAuth 2.0: /api/auth/google/login generates valid redirect to accounts.google.com with configured client_id',async({request})=>{
+  const response=await request.get('/api/auth/google/login?locale=en',{
+    maxRedirects:0,
+  });
+  expect([302,307]).toContain(response.status());
+  const location=response.headers()['location'];
+  expect(location).toContain('https://accounts.google.com/o/oauth2/v2/auth');
+  expect(location).toContain('client_id=');
+  expect(location).toContain('apps.googleusercontent.com');
+  expect(location).toContain('redirect_uri=');
+  expect(location).toContain('response_type=code');
+  expect(location).toContain('scope=openid+email+profile');
+  const setCookie=response.headers()['set-cookie']||'';
+  expect(setCookie).toContain('railraksha_google_oauth_state');
+});
+
 test('Firebase Setup Modal: opens, allows pasting and saving custom keys, persists in localStorage, and passes accessibility',async({page})=>{
   await page.goto('/en/login');
   await expect(page.locator('.firebase-config-toggle-btn')).toBeVisible();
@@ -175,4 +192,3 @@ test('Firebase Setup Modal: opens, allows pasting and saving custom keys, persis
   const stored = await page.evaluate(() => localStorage.getItem('railraksha_firebase_config'));
   expect(stored).toContain('my-custom-rail');
 });
-

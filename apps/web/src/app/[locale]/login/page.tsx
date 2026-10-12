@@ -3,7 +3,7 @@ import {getSession} from '@/lib/auth';
 import {redirect} from 'next/navigation';
 import {LoginView} from '@/components/login-view';
 
-export const metadata={title:'Sign in',robots:{index:false,follow:false}};
+export const metadata={title:'Sign in — RailRaksha AI',robots:{index:false,follow:false}};
 
 export default async function Login({params,searchParams}:{params:Promise<{locale:string}>;searchParams:Promise<{error?:string}>}){
   const {locale}=await params;

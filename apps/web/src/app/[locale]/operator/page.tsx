@@ -9,7 +9,7 @@ export default async function Operator({params}:{params:Promise<{locale:string}>
   const {locale}=await params;const session=await requireSession(locale);const t=await getTranslations('operator');
   let permitted=false;let unavailable=false;
   if(canOperate(session.roles)){
-    if(session.sub.startsWith('google_')){
+    if(session.sub.startsWith('google_')||session.sub.startsWith('c1718')||session.sub.startsWith('direct_')){
       permitted=true;
     }else{
       try{const response=await apiFetch('/v1/operator',session);permitted=response.ok;unavailable=response.status>=500;}catch{unavailable=true;}
