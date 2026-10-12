@@ -57,7 +57,7 @@ export function LoginView({locale,error,translations:t}:LoginViewProps){
       });
 
       if(result.ok&&result.returnTo){
-        router.push(result.returnTo);
+        window.location.href=result.returnTo;
       }else{
         setClientError(result.error||t.error);
         setLoading(false);

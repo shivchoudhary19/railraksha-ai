@@ -1,32 +1,46 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {apiFetch,clientId,getSession,issuer,sessionCookie,sessionFallbackCookie} from '@/lib/auth';
 import {redis} from '@/lib/redis';
-import {appOrigin,csrfMatches,trustedOrigin} from '@/lib/security';
+import {appOrigin,csrfMatches,secureCookies,trustedOrigin} from '@/lib/security';
 
 export async function POST(request:NextRequest){
   const session=await getSession();
   if(!session)return NextResponse.json({error:'Invalid request'},{status:403});
   let form:FormData;
   try{form=await request.formData();}catch{return NextResponse.json({error:'Expected a valid form'},{status:400});}
-  if(!trustedOrigin(request.headers.get('origin'),appOrigin())||!csrfMatches(session.csrf,form.get('csrf')))return NextResponse.json({error:'Invalid request'},{status:403});
+  const originHeader=request.headers.get('origin');
+  const refererHeader=request.headers.get('referer');
+  const incomingOrigin=originHeader||(refererHeader?new URL(refererHeader).origin:null);
+  if(!trustedOrigin(incomingOrigin,appOrigin())||!csrfMatches(session.csrf,form.get('csrf'))){
+    return NextResponse.json({error:'Invalid request'},{status:403});
+  }
   const locale=form.get('locale')==='hi'?'hi':'en';
   const sid=request.cookies.get(sessionCookie)?.value;
   const audited=await apiFetch('/v1/session-events',session,{method:'POST',body:JSON.stringify({action:'session.logout'})}).catch(()=>null);
   if(!audited?.ok)console.error(JSON.stringify({event:'logout_audit_unavailable'}));
   if(sid)await redis().del(`session:${sid}`).catch(()=>null);
 
+  const clearCookieOptions={
+    path:'/',
+    maxAge:0,
+    expires:new Date(0),
+    httpOnly:true,
+    secure:secureCookies(),
+    sameSite:'lax' as const,
+  };
+
   // If this was a Google/Firebase session, redirect directly to homepage
   if(session.sub.startsWith('google_')){
     const response=NextResponse.redirect(new URL(`/${locale}`,appOrigin()),303);
-    response.cookies.delete(sessionCookie);
-    response.cookies.delete(sessionFallbackCookie);
+    response.cookies.set(sessionCookie,'',clearCookieOptions);
+    response.cookies.set(sessionFallbackCookie,'',clearCookieOptions);
     return response;
   }
 
   const url=new URL(`${issuer()}/protocol/openid-connect/logout`);
   url.search=new URLSearchParams({client_id:clientId(),id_token_hint:session.idToken,post_logout_redirect_uri:`${appOrigin()}/${locale}`}).toString();
   const response=NextResponse.redirect(url,303);
-  response.cookies.delete(sessionCookie);
-  response.cookies.delete(sessionFallbackCookie);
+  response.cookies.set(sessionCookie,'',clearCookieOptions);
+  response.cookies.set(sessionFallbackCookie,'',clearCookieOptions);
   return response;
 }

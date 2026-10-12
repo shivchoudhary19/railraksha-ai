@@ -123,3 +123,49 @@ textarea{font:inherit}textarea:focus-visible{outline:3px solid var(--focus);outl
   .pro-heading{font-size:38px}
   .persona-chips-grid{grid-template-columns:1fr}
 }
+
+/* =========================================================================
+   UI PRO MAX — RESPONSIVE SITE HEADER & LIVE AUTHENTICATION SYSTEM
+   ========================================================================= */
+.auth-header-group{display:flex;align-items:center;gap:10px}
+.user-account-button{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:9999px;background:var(--surface);border:1px solid var(--border);font-size:13px;font-weight:600;color:var(--navy);transition:all .2s ease}
+.user-account-button:hover{border-color:var(--green);color:var(--green)}
+.user-status-dot{width:7px;height:7px;border-radius:50%;background:#16a34a;box-shadow:0 0 8px rgba(22,163,74,.6);flex-shrink:0}
+.user-short-name{max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-logout-form{display:inline-flex;margin:0}
+.header-logout-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s}
+.header-logout-btn:hover{color:#dc2626;border-color:rgba(220,38,38,.3);background:rgba(220,38,38,.05)}
+.operator-nav-link{display:inline-flex;align-items:center;gap:6px;color:var(--green);font-weight:600}
+.mobile-menu-toggle{display:none}
+
+.mobile-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:1000;display:flex;justify-content:flex-end;animation:fade-in-overlay .2s ease}
+@keyframes fade-in-overlay{from{opacity:0}to{opacity:1}}
+.mobile-drawer-panel{width:min(360px,86vw);height:100%;background:var(--bg);border-left:1px solid var(--border);padding:24px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:20px;box-shadow:-10px 0 30px rgba(0,0,0,.25);animation:slide-in-drawer .25s cubic-bezier(.16,1,.3,1)}
+@keyframes slide-in-drawer{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.mobile-user-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.mobile-user-header{display:flex;align-items:center;gap:12px}
+.mobile-user-avatar{width:38px;height:38px;border-radius:50%;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mobile-user-info{display:flex;flex-direction:column;min-width:0}
+.mobile-user-name{font-size:14px;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mobile-user-email{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mobile-user-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--green);background:var(--green-soft);padding:4px 10px;border-radius:9999px;align-self:flex-start}
+.mobile-user-links{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--border);padding-top:10px}
+.mobile-quick-link{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--ink);transition:background .15s}
+.mobile-quick-link:hover{background:var(--card)}
+.mobile-guest-card{padding:8px 0}
+.mobile-login-btn{width:100%;justify-content:center;padding:12px}
+.mobile-nav-list{display:flex;flex-direction:column;gap:4px}
+.mobile-nav-item{display:block;padding:10px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--ink);transition:all .15s}
+.mobile-nav-item:hover{background:var(--surface);color:var(--green)}
+.mobile-drawer-footer{margin-top:auto;border-top:1px solid var(--border);padding-top:16px}
+.mobile-logout-btn{width:100%;justify-content:center;color:#dc2626;border-color:rgba(220,38,38,.3)}
+
+@media(max-width:800px){
+  .desktop-nav{display:none}
+  .mobile-menu-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;flex-shrink:0}
+  .logout-text{display:none}
+  .auth-header-group{gap:6px}
+  .user-short-name{max-width:85px}
+  .header-logout-btn{padding:7px 8px}
+}
+

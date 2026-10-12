@@ -62,7 +62,7 @@ test('Firebase Google Authentication: Citizen signs in, accesses dashboard, and 
 
   // Sign out cleanly
   await page.goto('/en/dashboard');
-  await page.getByRole('button',{name:'Sign out'}).click();
+  await page.locator('.account-nav').getByRole('button',{name:'Sign out'}).click();
   await expect(page).toHaveURL(/\/en$/);
 
   // Cookies cleared
@@ -90,8 +90,42 @@ test('Firebase Google Authentication: RPF Cyber Lead quick-access persona allows
   await checkAccessibility(page);
 
   // Sign out cleanly
-  await page.getByRole('button',{name:'Sign out'}).click();
+  await page.locator('.account-nav').getByRole('button',{name:'Sign out'}).click();
   await expect(page).toHaveURL(/\/en$/);
+});
+
+test('Mobile Authentication: Sign in on mobile, header reflects user state, mobile drawer shows profile and signs out',async({page})=>{
+  // Emulate mobile viewport (iPhone SE / 375px)
+  await page.setViewportSize({width:375,height:812});
+
+  await page.goto('/en/login');
+  await expect(page.locator('.google-btn')).toBeVisible();
+
+  // Sign in with Google on mobile
+  await page.locator('.google-btn').click();
+  await expect(page).toHaveURL(/\/en\/dashboard$/);
+
+  // Header MUST show user identity / "My account", NOT "Sign in"
+  await expect(page.locator('.site-header .user-account-button')).toBeVisible();
+  await expect(page.locator('.site-header').getByText(/Rahul/i)).toBeVisible();
+  await expect(page.locator('.site-header').getByRole('link',{name:/Sign in/i})).not.toBeVisible();
+
+  // Open mobile drawer
+  await page.locator('.mobile-menu-toggle').click();
+  await expect(page.locator('.mobile-drawer-panel')).toBeVisible();
+  await expect(page.locator('.mobile-user-name')).toHaveText(/Rahul Sharma/i);
+  await expect(page.locator('.mobile-user-badge')).toBeVisible();
+
+  // No horizontal overflow on mobile
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+
+  // Sign out from mobile drawer
+  await page.locator('.mobile-logout-btn').click();
+  await expect(page).toHaveURL(/\/en$/);
+
+  // Header should now show "Sign in" on public home
+  await expect(page.locator('.site-header').getByRole('link',{name:/Sign in/i})).toBeVisible();
+  await expect(page.locator('.site-header .user-account-button')).not.toBeVisible();
 });
 
 test('Google Auth API: rejects untrusted origins',async({request})=>{

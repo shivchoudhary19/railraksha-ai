@@ -22,7 +22,7 @@ export function trustedOrigin(origin:string|null,expected:string){
   }
   return false;
 }
-export function secureCookies(){return process.env.APP_ENV==='production'||process.env.SESSION_COOKIE_SECURE==='true';}
+export function secureCookies(){return process.env.NODE_ENV==='production'||process.env.VERCEL==='1'||process.env.APP_ENV==='production'||process.env.SESSION_COOKIE_SECURE==='true';}
 export function appOrigin(){
   if(process.env.APP_ORIGIN)return process.env.APP_ORIGIN;
   if(process.env.VERCEL_PROJECT_PRODUCTION_URL)return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
